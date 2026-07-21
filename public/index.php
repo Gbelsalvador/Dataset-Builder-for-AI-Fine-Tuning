@@ -1,6 +1,10 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
 
 $router = new AltoRouter();
 
@@ -8,13 +12,13 @@ $router = new AltoRouter();
 // décommente et ajuste la ligne ci-dessous :
 // $router->setBasePath('/mon-projet/public');
 
-// 3. Inclusion des routes (situées dans /routes/routes.php)
 require_once __DIR__ . '/../routes/get.php';
 require_once __DIR__ . '/../routes/post.php';
 require_once __DIR__ . '/../routes/update.php';
 require_once __DIR__ . '/../routes/delete.php';
 
 $match = $router->match();
+
 
 if (is_array($match)) {
     list($controllerName, $method) = explode('#', $match['target']);
