@@ -17,7 +17,7 @@ class HomeController
      */
     public function index(): void
     {
-        require dirname(__DIR__) . '/views/projects/index.php';
+        require dirname(__DIR__) . '/../views/projects/index.php';
     }
 
     /**
@@ -29,6 +29,6 @@ class HomeController
      */
     public function project(string $id): void
     {
-        require dirname(__DIR__) . '/views/projects/show.php';
+        require dirname(__DIR__) . '/../views/projects/show.php';
     }
 }
