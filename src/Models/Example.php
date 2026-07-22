@@ -68,7 +68,10 @@ class Example
             ]
         );
 
-        return $cursor->toArray();
+         return array_map(
+            static fn ($document) => $document->getArrayCopy(),
+            $cursor->toArray()
+            );
     }
 
     /**
@@ -82,7 +85,10 @@ class Example
             '$text'      => ['$search' => $query],
         ]);
 
-        return $cursor->toArray();
+        return array_map(
+            static fn ($document) => $document->getArrayCopy(),
+            $cursor->toArray()
+        );
     }
 
     /**
@@ -132,7 +138,10 @@ class Example
             ['sort' => ['created_at' => 1]]
         );
 
-        return $cursor->toArray();
+        return array_map(
+            static fn ($document) => $document->getArrayCopy(),
+            $cursor->toArray()
+            );
     }
 
     /**
