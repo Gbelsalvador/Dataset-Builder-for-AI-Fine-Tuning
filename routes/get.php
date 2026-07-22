@@ -2,7 +2,8 @@
 /**
  * get.php
  * ---------------------------------------------------------------
- * Déclare toutes les routes HTTP GET de l'application
+ * Déclare toutes les routes HTTP GET de l'application.
+ *
  * Cible : "NomDuController#methode" (namespace App\Controllers ajouté
  * automatiquement dans public/index.php).
  * ---------------------------------------------------------------
@@ -14,7 +15,14 @@
 $router->addMatchTypes(['format' => '[a-zA-Z_]++']);
 
 // -----------------------------------------------------------------
-// Projets
+// Pages HTML (rendu de vues via HomeController, consommées ensuite
+// en AJAX par le JS des pages elles-mêmes)
+// -----------------------------------------------------------------
+$router->map('GET', '/', 'HomeController#index', 'home');
+$router->map('GET', '/projects/[h:id]', 'HomeController#project', 'projects.workspace');
+
+// -----------------------------------------------------------------
+// Projets (API JSON)
 // -----------------------------------------------------------------
 $router->map('GET', '/projects/list', 'ProjectController#index', 'projects.list');
 $router->map('GET', '/projects/show/[h:id]', 'ProjectController#show', 'projects.show');
