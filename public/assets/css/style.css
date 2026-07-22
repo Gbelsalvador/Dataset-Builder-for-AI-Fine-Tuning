@@ -1,0 +1,271 @@
+/* =================================================================
+   Dataset Builder — Design System
+   ---------------------------------------------------------------
+   Palette : Ink #14171F · Paper #F6F7F5 · Graphite #1F2430
+             Cobalt #2E4BFF (accent primaire) · Amber #F2A93B (tags)
+             Mint #1FAE7E (succès) · Rose #E23D5D (danger)
+   Typo    : Space Grotesk (titres) · Inter (corps) · IBM Plex Mono (données)
+   Motif signature : la "fiche catalogue" — chaque exemple d'entraînement
+   est traité comme une fiche indexée (bordure pointillée + étiquette
+   monospace), en écho à l'idée de constituer un catalogue de données.
+   ================================================================= */
+
+:root {
+  --db-ink: #14171f;
+  --db-paper: #f6f7f5;
+  --db-paper-raised: #ffffff;
+  --db-graphite: #1f2430;
+  --db-graphite-soft: #5b6472;
+  --db-cobalt: #2e4bff;
+  --db-cobalt-dark: #1f36cc;
+  --db-amber: #f2a93b;
+  --db-mint: #1fae7e;
+  --db-rose: #e23d5d;
+  --db-border: #dfe2e0;
+
+  --bs-body-font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --bs-body-bg: var(--db-paper);
+  --bs-body-color: var(--db-graphite);
+  --bs-primary: var(--db-cobalt);
+  --bs-primary-rgb: 46, 75, 255;
+  --bs-border-radius: 0.5rem;
+  --bs-border-radius-lg: 0.75rem;
+  --bs-link-color: var(--db-cobalt);
+}
+
+body {
+  font-family: var(--bs-body-font-family);
+}
+
+h1, h2, h3, h4, .db-brand {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+code, .db-mono, .db-json-preview, .db-tag, .db-eyebrow, .db-back-link, .db-format-choice {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Navbar ----------------------------------------------------------- */
+.db-navbar {
+  background: var(--db-ink);
+  padding-top: .9rem;
+  padding-bottom: .9rem;
+  border-bottom: 3px solid var(--db-amber);
+}
+.db-brand {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+}
+.db-brand:hover { color: #fff; }
+.db-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--db-amber);
+  color: var(--db-ink);
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  font-size: .7rem;
+  border-radius: 6px;
+}
+.db-navbar-tag {
+  margin-left: auto;
+  color: #9aa0ad;
+  font-size: .8rem;
+  font-family: 'IBM Plex Mono', monospace;
+  display: none;
+}
+@media (min-width: 768px) {
+  .db-navbar-tag { display: inline; }
+}
+
+.db-main {
+  padding-top: 2.25rem;
+  padding-bottom: 4rem;
+  min-height: 70vh;
+}
+
+/* Eyebrow / back-link ------------------------------------------------ */
+.db-eyebrow {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--db-cobalt);
+}
+.db-back-link {
+  font-size: .82rem;
+  color: var(--db-graphite-soft);
+  text-decoration: none;
+}
+.db-back-link:hover { color: var(--db-cobalt); }
+
+/* Buttons ------------------------------------------------------------- */
+.btn-primary {
+  background: var(--db-cobalt);
+  border-color: var(--db-cobalt);
+  font-weight: 600;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: var(--db-cobalt-dark);
+  border-color: var(--db-cobalt-dark);
+}
+.btn-outline-secondary {
+  border-color: var(--db-border);
+  color: var(--db-graphite-soft);
+}
+.btn-check:checked + .btn-outline-secondary {
+  background: var(--db-cobalt);
+  border-color: var(--db-cobalt);
+  color: #fff;
+}
+
+/* Format tag (étiquette de fiche) -------------------------------------- */
+.db-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .2rem .55rem;
+  font-size: .72rem;
+  font-weight: 500;
+  border-radius: 999px;
+  background: #fff2df;
+  color: #9a5b00;
+  border: 1px solid #f2d8a8;
+  text-transform: lowercase;
+}
+.db-tag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--db-amber);
+}
+
+/* Project card ("fiche" du shelf) --------------------------------------- */
+.db-project-card {
+  background: var(--db-paper-raised);
+  border: 1px solid var(--db-border);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 1.35rem;
+  height: 100%;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.db-project-card:hover {
+  box-shadow: 0 10px 24px rgba(20, 23, 31, .08);
+  transform: translateY(-2px);
+}
+.db-project-card .db-count {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .78rem;
+  color: var(--db-graphite-soft);
+}
+
+.db-project-header {
+  background: var(--db-paper-raised);
+  border: 1px solid var(--db-border);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 1.5rem;
+}
+
+/* Example "index card" --------------------------------------------------- */
+.db-example-card {
+  background: var(--db-paper-raised);
+  border: 1px solid var(--db-border);
+  border-left: 3px dashed var(--db-cobalt);
+  border-radius: .5rem;
+  padding: 1rem 1.15rem;
+  margin-bottom: .85rem;
+}
+.db-example-card .db-field-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--db-graphite-soft);
+  margin-bottom: .15rem;
+}
+.db-example-card .db-field-value {
+  font-size: .92rem;
+  white-space: pre-wrap;
+  margin-bottom: .65rem;
+}
+
+/* JSON preview block ------------------------------------------------------- */
+.db-json-preview {
+  background: var(--db-ink);
+  color: #d7f9e3;
+  font-size: .82rem;
+  border-radius: .6rem;
+  padding: 1.1rem;
+  max-height: 420px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+/* Export panel --------------------------------------------------------------- */
+.db-export-panel {
+  background: var(--db-paper-raised);
+  border: 1px solid var(--db-border);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 1.5rem;
+  position: sticky;
+  top: 1.5rem;
+}
+
+.db-format-choice {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  border: 1px solid var(--db-border);
+  border-radius: .5rem;
+  padding: .55rem .8rem;
+  cursor: pointer;
+  font-size: .82rem;
+  background: #fff;
+  transition: border-color .12s ease, background .12s ease;
+}
+.db-format-choice.active,
+.db-format-choice:hover {
+  border-color: var(--db-cobalt);
+  background: #eef1ff;
+}
+.db-format-radio { display: none; }
+
+/* Empty state ------------------------------------------------------------------ */
+.db-empty {
+  border: 1px dashed var(--db-border);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--db-graphite-soft);
+}
+
+/* Toasts --------------------------------------------------------------------- */
+.db-toast-container {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+/* Footer ----------------------------------------------------------------------- */
+.db-footer {
+  background: var(--db-ink);
+  color: #9aa0ad;
+  font-size: .82rem;
+  padding: 1.25rem 0;
+  margin-top: 2rem;
+}
+.db-footer-sep { opacity: .5; }
