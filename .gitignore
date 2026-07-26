@@ -1,4 +1,5 @@
-composer.json
+composer.lock
 /vendor/
 .env
 /test/
+/storage/exports/
