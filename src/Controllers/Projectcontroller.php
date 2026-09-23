@@ -7,7 +7,7 @@ use App\Models\Example;
 use App\Models\Project;
 use InvalidArgumentException;
 use MongoDB\Driver\Exception\Exception as MongoException;
-
+use OpenApi\Attributes as OA;
 /**
  * ProjectController
  * ---------------------------------------------------------------
@@ -31,6 +31,18 @@ class ProjectController extends Controller
         $this->projectModel = new Project();
         $this->exampleModel = new Example();
     }
+
+    #[QA\Get(
+        path: "/api/projects",
+        summary: "recuperer tous les projects",
+        tags : ["projects"],
+        responses : [
+            new QA\Response(
+                response:200,
+                description : "liste des projects"
+            )
+        ]
+    )]
 
     /**
      * Liste tous les projets.
@@ -90,10 +102,13 @@ class ProjectController extends Controller
                 'name'        => trim($data['name']),
                 'description' => $data['description'] ?? '',
                 'format'      => $data['format'],
+                'schema'      => $this->normalizeSchema($data['schema'] ?? []),
                 'tags'        => $data['tags'] ?? [],
             ]);
 
             $this->success(['id' => $id], 'Projet créé avec succès.', 201);
+        } catch (InvalidArgumentException $e) {
+            $this->error($e->getMessage(), 422);
         } catch (MongoException $e) {
             $this->error('Erreur lors de la création du projet.', 500, ['exception' => $e->getMessage()]);
         }
@@ -111,10 +126,20 @@ class ProjectController extends Controller
             return;
         }
 
+        if (isset($data['schema'])) {
+            try {
+                $data['schema'] = $this->normalizeSchema($data['schema']);
+            } catch (InvalidArgumentException $e) {
+                $this->error($e->getMessage(), 422);
+                return;
+            }
+        }
+
         $payload = array_filter([
             'name'        => $data['name'] ?? null,
             'description' => $data['description'] ?? null,
             'format'      => $data['format'] ?? null,
+            'schema'      => $data['schema'] ?? null,
             'tags'        => $data['tags'] ?? null,
         ], static fn ($value) => $value !== null);
 
@@ -155,5 +180,36 @@ class ProjectController extends Controller
         } catch (InvalidArgumentException $e) {
             $this->error('Identifiant de projet invalide.', 422);
         }
+    }
+
+    private function normalizeSchema($schema): array
+    {
+        if (!is_array($schema)) {
+            throw new InvalidArgumentException('La structure du dataset doit être un tableau.');
+        }
+
+        $allowedTypes = ['string', 'integer', 'number', 'boolean'];
+        $normalized = [];
+
+        foreach ($schema as $index => $field) {
+            if (!is_array($field) || trim((string) ($field['name'] ?? '')) === '') {
+                throw new InvalidArgumentException("Le champ de structure #{$index} est invalide.");
+            }
+
+            $type = $field['type'] ?? 'string';
+            if (!in_array($type, $allowedTypes, true)) {
+                throw new InvalidArgumentException("Le type du champ '{$field['name']}' est invalide.");
+            }
+
+            $normalized[] = [
+                'name'      => trim((string) $field['name']),
+                'type'      => $type,
+                'parent'    => trim((string) ($field['parent'] ?? '')),
+                'repeat_on' => trim((string) ($field['repeat_on'] ?? '')),
+                'required'  => !empty($field['required']),
+            ];
+        }
+
+        return $normalized;
     }
 }

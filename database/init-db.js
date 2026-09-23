@@ -58,6 +58,21 @@ database.createCollection("projects", {
           enum: SUPPORTED_FORMATS,
           description: "Format d'export cible du projet — requis",
         },
+        schema: {
+          bsonType: "array",
+          description: "Structure réutilisable des champs du dataset",
+          items: {
+            bsonType: "object",
+            required: ["name", "type"],
+            properties: {
+              name: { bsonType: "string" },
+              type: { enum: ["string", "integer", "number", "boolean"] },
+              parent: { bsonType: "string" },
+              repeat_on: { bsonType: "string" },
+              required: { bsonType: "bool" },
+            },
+          },
+        },
         tags: {
           bsonType: "array",
           items: { bsonType: "string" },

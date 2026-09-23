@@ -20,10 +20,26 @@ require __DIR__ . '/../layouts/header.php';
     <!-- Injecté en JS par examples.js -->
 </div>
 
+<section class="db-schema-panel mb-4" aria-labelledby="schemaTitle">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+      <p class="db-eyebrow mb-1">Étape 1</p>
+      <h2 class="h5 mb-1" id="schemaTitle">Structure du dataset</h2>
+      <p class="text-secondary small mb-0">Définissez les champs une seule fois. Ils seront réutilisés pour chaque donnée.</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" id="btnSaveSchema">Enregistrer la structure</button>
+  </div>
+  <div id="schemaFields"></div>
+  <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="btnAddSchemaField">+ Ajouter un champ</button>
+</section>
+
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-            <h2 class="h5 mb-0">Exemples d'entraînement</h2>
+            <div>
+              <p class="db-eyebrow mb-1">Étape 2</p>
+              <h2 class="h5 mb-0">Saisie des données</h2>
+            </div>
             <button type="button" class="btn btn-primary btn-sm" id="btnAddExample">
                 + Ajouter un exemple
             </button>
@@ -64,7 +80,7 @@ require __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-<!-- Modal : ajout / édition d'exemple -->
+<!-- Modal : ajout / édition de données générées depuis le schéma -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -76,43 +92,13 @@ require __DIR__ . '/../layouts/header.php';
         </div>
         <div class="modal-body">
 
-          <div class="btn-group mb-3" role="group" aria-label="Structure de l'exemple">
-            <input type="radio" class="btn-check" name="structure" id="structureInstruction" value="instruction" checked>
-            <label class="btn btn-outline-secondary btn-sm" for="structureInstruction">Instruction / Output</label>
-
-            <input type="radio" class="btn-check" name="structure" id="structureMessages" value="messages">
-            <label class="btn btn-outline-secondary btn-sm" for="structureMessages">Conversation</label>
+          <div class="mb-3">
+            <label class="form-label" for="recordQuantity">Nombre de données à remplir</label>
+            <input type="number" class="form-control" id="recordQuantity" min="1" max="100" value="1">
+            <div class="form-text">Le formulaire sera généré pour chaque donnée.</div>
           </div>
 
-          <div id="fieldsInstruction">
-            <div class="mb-3">
-              <label class="form-label">Instruction</label>
-              <textarea class="form-control" name="instruction" rows="2" placeholder="Que doit faire le modèle ?"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Input <span class="text-secondary">(optionnel)</span></label>
-              <textarea class="form-control" name="input" rows="2" placeholder="Contexte ou donnée d'entrée"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Output attendu</label>
-              <textarea class="form-control" name="output" rows="3" placeholder="Réponse idéale du modèle"></textarea>
-            </div>
-          </div>
-
-          <div id="fieldsMessages" class="d-none">
-            <div class="mb-3">
-              <label class="form-label">System <span class="text-secondary">(optionnel)</span></label>
-              <textarea class="form-control" name="system" rows="2" placeholder="Consigne système"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">User</label>
-              <textarea class="form-control" name="user" rows="2" placeholder="Message de l'utilisateur"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Assistant</label>
-              <textarea class="form-control" name="assistant" rows="3" placeholder="Réponse de l'assistant"></textarea>
-            </div>
-          </div>
+          <div id="generatedRecordFields"></div>
 
           <div class="mb-1">
             <label class="form-label">Tags <span class="text-secondary">(séparés par des virgules)</span></label>

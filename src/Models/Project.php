@@ -33,6 +33,7 @@ class Project
             'name'            => $data['name'],
             'description'     => $data['description'] ?? '',
             'format'          => $data['format'],
+            'schema'          => $data['schema'] ?? [],
             'tags'            => $data['tags'] ?? [],
             'examples_count'  => 0,
             'created_at'      => new UTCDateTime(),
