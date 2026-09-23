@@ -174,6 +174,53 @@ code, .db-mono, .db-json-preview, .db-tag, .db-eyebrow, .db-back-link, .db-forma
   padding: 1.5rem;
 }
 
+/* Schema builder ---------------------------------------------------------- */
+.db-schema-panel {
+  background: var(--db-paper-raised);
+  border: 1px solid var(--db-border);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 1.35rem;
+}
+.schema-row {
+  padding: .8rem;
+  border: 1px solid var(--db-border);
+  border-radius: .5rem;
+  background: #fbfcfb;
+}
+.schema-row .form-label {
+  color: var(--db-graphite-soft);
+  margin-bottom: .3rem;
+}
+.schema-row .form-control,
+.schema-row .form-select {
+  min-width: 0;
+}
+.schema-row .form-check {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+  .db-main {
+    padding-top: 1.25rem;
+  }
+  .db-project-header,
+  .db-schema-panel,
+  .db-export-panel {
+    padding: 1rem;
+  }
+  .schema-row {
+    padding: .7rem;
+  }
+  .schema-row .form-check {
+    min-height: auto;
+    padding: .35rem .75rem;
+  }
+}
+
 /* Example "index card" --------------------------------------------------- */
 .db-example-card {
   background: var(--db-paper-raised);
