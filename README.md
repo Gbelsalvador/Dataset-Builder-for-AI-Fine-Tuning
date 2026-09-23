@@ -13,6 +13,7 @@
 
 - [ Description](#-description)
 - [ Fonctionnalités](#-fonctionnalités)
+- [ Flux de création d'un dataset](#-flux-de-création-dun-dataset)
 - [ Formats d'export](#-formats-dexport)
 - [ Structure d'un exemple](#-structure-dun-exemple)
 - [ Technologies](#️-technologies)
@@ -32,12 +33,13 @@
 
 **Dataset Builder for AI Fine-Tuning** est une application web développée en **PHP** avec une base de données **MongoDB**, conçue pour permettre à n'importe qui — développeur, data scientist, chercheur ou passionné d'IA — de créer facilement des jeux de données de haute qualité destinés au **fine-tuning de modèles de langage (LLM)**.
 
-L'application propose une interface simple et intuitive dans laquelle l'utilisateur peut :
+L'application propose une interface simple dans laquelle l'utilisateur peut :
 
 1. Créer un projet de dataset,
-2. Ajouter des exemples d'entraînement en remplissant des champs dédiés (instruction, contexte, réponse, conversation, etc.),
-3. Enregistrer automatiquement chaque exemple dans MongoDB,
-4. Exporter l'ensemble du dataset dans un format directement exploitable pour l'entraînement d'un modèle.
+2. définir une structure de champs réutilisable,
+3. générer automatiquement un formulaire de saisie à partir de cette structure,
+4. enregistrer une ou plusieurs données dans MongoDB,
+5. exporter l'ensemble du dataset dans un format directement exploitable.
 
 Le projet est pensé comme un outil **léger, rapide et pratique**, destiné à toute personne souhaitant produire ses propres datasets pour des modèles tels que **Llama**, **Qwen**, **Mistral**, **Gemma**, ou tout autre LLM open-source ou propriétaire.
 
@@ -48,15 +50,36 @@ Le projet est pensé comme un outil **léger, rapide et pratique**, destiné à 
 | Fonctionnalité | Description |
 |---|---|
 |  **Création d'un projet de dataset** | Initialiser un nouveau projet pour regrouper un ensemble cohérent d'exemples d'entraînement. |
-|  **Ajout d'exemples d'entraînement** | Ajouter autant d'exemples que nécessaire via un formulaire adapté au format choisi. |
-|  **Modification d'un exemple** | Éditer le contenu d'un exemple existant sans avoir à le recréer. |
-|  **Suppression d'un exemple** | Retirer un exemple devenu obsolète ou incorrect. |
-|  **Liste de tous les exemples** | Visualiser l'ensemble des exemples d'un projet sous forme de liste paginée. |
-|  **Recherche d'exemples** | Rechercher rapidement un exemple par mot-clé, instruction ou contenu. |
+|  **Définition du schéma** | Déclarer les champs, leurs types, leurs parents et leurs règles de répétition. |
+|  **Formulaire automatique** | Générer les champs de saisie à partir du schéma du projet. |
+|  **Champs imbriqués** | Organiser les données dans des objets parents, par exemple `famille.nom_femme`. |
+|  **Champs répétitifs** | Générer dynamiquement plusieurs champs à partir d'un compteur entier. |
+|  **Saisie multiple** | Créer plusieurs données depuis une seule ouverture du formulaire. |
+|  **Modification d'une donnée** | Éditer le contenu d'une donnée existante sans la recréer. |
+|  **Suppression d'une donnée** | Retirer une donnée devenue obsolète ou incorrecte. |
+|  **Liste et recherche** | Visualiser et rechercher les données d'un projet sous forme de liste paginée. |
 |  **Sauvegarde automatique** | Chaque ajout ou modification est enregistré instantanément dans MongoDB. |
 |  **Export du dataset** | Générer un fichier prêt à l'emploi dans le format sélectionné. |
 |  **Prévisualisation avant export** | Vérifier visuellement le rendu final du dataset avant de le télécharger. |
 | ⬇ **Téléchargement du dataset** | Télécharger le fichier final (JSON, JSONL...) en un clic. |
+
+---
+
+## 🔁 Flux de création d'un dataset
+
+Le fonctionnement sépare la **structure** des **données** :
+
+1. L'utilisateur crée un projet et choisit un format de sortie, par exemple `JSON`.
+2. Il définit le schéma : nom du champ, type (`string`, `integer`, `number` ou `boolean`), parent éventuel et champ compteur éventuel.
+3. Le schéma est enregistré dans le document MongoDB du projet.
+4. L'application génère le formulaire de saisie à partir du schéma enregistré.
+5. L'utilisateur indique le nombre de données à remplir et saisit les valeurs.
+6. Les valeurs sont reconstruites en objets imbriqués puis enregistrées comme données du projet.
+7. L'utilisateur prévisualise ou télécharge le dataset dans le format choisi.
+
+Un champ `nom_enfant` peut par exemple être configuré avec `nombre_d_enfants` comme compteur. Si la valeur saisie est `2`, le formulaire affiche automatiquement `nom_enfant_1` et `nom_enfant_2`.
+
+Pour le fonctionnement interne des contrôleurs, modèles, documents MongoDB et formulaires générés, voir [la documentation technique des projets et structures](docs/technical-project-structure.md).
 
 ---
 
@@ -105,7 +128,7 @@ Selon le format d'export choisi, un exemple d'entraînement peut suivre différe
 
 ### Structure libre
 
-L'application reste flexible : chaque format peut définir ses propres champs, tant que la structure finale reste compatible avec les exigences de sortie du format sélectionné.
+L'application reste flexible : les formats `JSON` et `JSONL` peuvent contenir la structure définie par l'utilisateur. Les formats spécialisés comme Alpaca, ShareGPT ou OpenAI Messages appliquent leurs propres transformations lors de l'export ; le schéma doit donc produire une structure compatible avec le format choisi.
 
 ---
 
@@ -178,8 +201,8 @@ L'application utilise **MongoDB** pour stocker les projets et les exemples d'ent
 
 | Collection | Description |
 |---|---|
-| `projects` | Contient les métadonnées de chaque projet de dataset (nom, format cible, description). |
-| `examples` | Contient les exemples d'entraînement, liés à un projet via `project_id`. |
+| `projects` | Contient les métadonnées, le format cible et le schéma réutilisable de chaque projet. |
+| `examples` | Contient les données générées, liées à un projet via `project_id`. |
 
 ---
 
@@ -194,6 +217,7 @@ L'application expose un ensemble de routes internes utilisées par les vues et l
 | `DELETE` / `POST` | `/examples/delete/{id}` | Supprime un exemple. |
 | `GET` | `/examples/list` | Récupère la liste des exemples d'un projet. |
 | `GET` | `/examples/search?q=...` | Recherche des exemples selon un mot-clé. |
+| `PUT` | `/projects/update/{id}` | Met à jour les métadonnées ou le schéma d'un projet. |
 | `GET` | `/export/{format}` | Génère et télécharge le dataset dans le format demandé. |
 | `GET` | `/export/preview/{format}` | Retourne un aperçu du dataset avant export final. |
 
