@@ -66,7 +66,7 @@ database.createCollection("projects", {
             required: ["name", "type"],
             properties: {
               name: { bsonType: "string" },
-              type: { enum: ["string", "integer", "number", "boolean"] },
+              type: { enum: ["string", "integer", "number", "boolean", "object", "array"] },
               parent: { bsonType: "string" },
               repeat_on: { bsonType: "string" },
               required: { bsonType: "bool" },

@@ -104,7 +104,7 @@ function renderSchema(schema) {
 function renderSchemaRow(field) {
   return `<div class="row g-2 align-items-end schema-row mb-2" data-schema-row>
     <div class="col-md-3"><label class="form-label small">Nom du champ</label><input class="form-control" data-schema-name value="${escapeHtml(field.name || '')}" placeholder="ex. nom_enfant"></div>
-    <div class="col-md-2"><label class="form-label small">Type</label><select class="form-select" data-schema-type>${['string', 'integer', 'number', 'boolean'].map((type) => `<option value="${type}" ${field.type === type ? 'selected' : ''}>${type}</option>`).join('')}</select></div>
+    <div class="col-md-2"><label class="form-label small">Type</label><select class="form-select" data-schema-type>${['string', 'integer', 'number', 'boolean', 'object', 'array'].map((type) => `<option value="${type}" ${field.type === type ? 'selected' : ''}>${type}</option>`).join('')}</select></div>
     <div class="col-md-2"><label class="form-label small">Parent</label><select class="form-select" data-schema-parent data-initial-value="${escapeHtml(field.parent || '')}"><option value="">Racine</option></select></div>
     <div class="col-md-3"><label class="form-label small">Répéter selon</label><select class="form-select" data-schema-repeat data-initial-value="${escapeHtml(field.repeat_on || '')}"><option value="">Jamais</option></select></div>
     <div class="col-md-1 form-check pb-2"><input class="form-check-input" type="checkbox" data-schema-required ${field.required ? 'checked' : ''}><label class="form-check-label small">Requis</label></div>
@@ -185,56 +185,82 @@ function renderGeneratedRecords(quantity = null, drafts = null) {
 }
 
 function renderFieldsForRecord(schema, draft) {
-  return schema.map((field) => {
-    const repeatPath = field.parent && field.repeat_on ? `${field.parent}.${field.repeat_on}` : field.repeat_on;
-    const count = repeatPath ? Math.max(0, Number(getDraftValue(draft, repeatPath) || 0)) : 1;
+  return schema.filter((field) => !['object', 'array'].includes(field.type)).map((field) => {
+    const arrayParent = findArrayParent(field, schema);
+    const count = arrayParent
+      ? getRepeatCount(arrayParent, draft, schema)
+      : field.repeat_on
+        ? Math.max(0, Number(getDraftValue(draft, getRepeatPath(field, schema)) || 0))
+        : 1;
     if (!count) return '';
     return Array.from({ length: count }, (_, index) => {
-      const key = index ? `${field.name}_${index + 1}` : field.name;
-      const path = field.parent ? `${field.parent}.${key}` : key;
+      const path = arrayParent
+        ? `${getFieldPath(arrayParent, schema)}.${index}.${field.name}`
+        : getFieldPath(field, schema, field.repeat_on ? index : null);
       const value = getDraftValue(draft, path);
       const type = field.type === 'boolean' ? 'checkbox' : field.type === 'number' || field.type === 'integer' ? 'number' : 'text';
-      return `<div class="mb-3"><label class="form-label">${escapeHtml(field.name)}${field.repeat_on ? ` ${index + 1}` : ''}${field.required ? ' *' : ''}</label><input class="form-control" type="${type}" data-field-path="${escapeHtml(path)}" data-field-type="${field.type}" ${field.repeat_on ? 'data-repeat-source="false"' : ''} ${field.required ? 'required' : ''} ${type === 'checkbox' ? (value ? 'checked' : '') : `value="${escapeHtml(value ?? '')}"`}></div>`;
+      const label = arrayParent ? `${arrayParent.name} ${index + 1} — ${field.name}` : `${field.name}${field.repeat_on ? ` ${index + 1}` : ''}`;
+      return `<div class="mb-3"><label class="form-label">${escapeHtml(label)}${field.required ? ' *' : ''}</label><input class="form-control" type="${type}" data-field-path="${escapeHtml(path)}" data-field-type="${field.type}" ${field.required ? 'required' : ''} ${type === 'checkbox' ? (value ? 'checked' : '') : `value="${escapeHtml(value ?? '')}"`}></div>`;
     }).join('');
   }).join('');
 }
 
 function getDraftValue(object, path) { return path.split('.').reduce((value, key) => value == null ? undefined : value[key], object); }
 
+function getFieldPath(field, schema, repeatIndex = null) {
+  const parent = schema.find((candidate) => candidate.name === field.parent);
+  const base = parent ? `${getFieldPath(parent, schema)}.${field.name}` : field.name;
+  if (repeatIndex === null) return base;
+  return parent ? `${getFieldPath(parent, schema)}.${field.name}_${repeatIndex + 1}` : `${field.name}_${repeatIndex + 1}`;
+}
+
+function findArrayParent(field, schema) {
+  let parent = schema.find((candidate) => candidate.name === field.parent);
+  while (parent) {
+    if (parent.type === 'array') return parent;
+    parent = schema.find((candidate) => candidate.name === parent.parent);
+  }
+  return null;
+}
+
+function getRepeatPath(field, schema) {
+  if (!field.repeat_on) return '';
+  const parent = schema.find((candidate) => candidate.name === field.parent);
+  return parent ? `${getFieldPath(parent, schema)}.${field.repeat_on}` : field.repeat_on;
+}
+
+function getRepeatCount(arrayField, draft, schema) {
+  const repeatPath = arrayField.repeat_on ? getRepeatPath(arrayField, schema) : getFieldPath(arrayField, schema);
+  return Math.max(0, Number(getDraftValue(draft, repeatPath) || 0));
+}
+
 function collectRecordDrafts() {
   return [...document.querySelectorAll('[data-record]')].map((record) => {
     const values = {};
-    record.querySelectorAll('[data-field-path]').forEach((input) => setNestedValue(values, input.dataset.fieldPath, input.type === 'checkbox' ? input.checked : input.value));
-    return values;
-  });
-}
-
-function collectRecordValues() {
-  return collectRecordDrafts().map((record) => {
-    currentProject.schema.forEach((field) => {
-      const value = field.parent ? getDraftValue(record, field.parent)?.[field.name] : record[field.name];
-      if (value === undefined || value === '') return;
-      const converted = field.type === 'integer' ? Number.parseInt(value, 10) : field.type === 'number' ? Number(value) : field.type === 'boolean' ? Boolean(value) : value;
-      if (field.parent) {
-        const parent = getDraftValue(record, field.parent);
-        if (parent) parent[field.name] = converted;
-      } else record[field.name] = converted;
+    record.querySelectorAll('[data-field-path]').forEach((input) => {
+      let value = input.type === 'checkbox' ? input.checked : input.value;
+      if (input.dataset.fieldType === 'integer') value = value === '' ? '' : Number.parseInt(value, 10);
+      if (input.dataset.fieldType === 'number') value = value === '' ? '' : Number(value);
+      setNestedValue(values, input.dataset.fieldPath, value);
     });
-    return record;
+    return values;
   });
 }
 
 function setNestedValue(object, path, value) {
   const keys = path.split('.');
   const last = keys.pop();
-  const target = keys.reduce((current, key) => current[key] || (current[key] = {}), object);
+  const target = keys.reduce((current, key, index) => {
+    if (current[key] === undefined) current[key] = /^\d+$/.test(keys[index + 1] || '') ? [] : {};
+    return current[key];
+  }, object);
   target[last] = value;
 }
 
 async function onSaveExample(event) {
   event.preventDefault();
   const id = document.getElementById('exampleId').value;
-  const records = collectRecordValues();
+  const records = collectRecordDrafts();
   try {
     if (id) {
       await Api.put(`/examples/update/${id}`, { content: records[0] });

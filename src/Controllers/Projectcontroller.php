@@ -188,7 +188,7 @@ class ProjectController extends Controller
             throw new InvalidArgumentException('La structure du dataset doit être un tableau.');
         }
 
-        $allowedTypes = ['string', 'integer', 'number', 'boolean'];
+        $allowedTypes = ['string', 'integer', 'number', 'boolean', 'object', 'array'];
         $normalized = [];
 
         foreach ($schema as $index => $field) {

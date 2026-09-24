@@ -79,6 +79,20 @@ Le fonctionnement sépare la **structure** des **données** :
 
 Un champ `nom_enfant` peut par exemple être configuré avec `nombre_d_enfants` comme compteur. Si la valeur saisie est `2`, le formulaire affiche automatiquement `nom_enfant_1` et `nom_enfant_2`.
 
+Pour une structure comme `code_travail` avec plusieurs articles, utilisez un tableau d'objets :
+
+```json
+{
+  "code_travail": {
+    "chapitre": 1,
+    "articles": [
+      { "numero": 1, "contenu": "hhhhh" },
+      { "numero": 2, "contenu": "hhfhf" }
+    ]
+  }
+}
+```
+
 Pour le fonctionnement interne des contrôleurs, modèles, documents MongoDB et formulaires générés, voir [la documentation technique des projets et structures](docs/technical-project-structure.md).
 
 ---

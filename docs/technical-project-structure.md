@@ -55,7 +55,7 @@ Dans l'atelier, l'utilisateur ajoute une ligne par champ. Une définition contie
 | Propriété | Valeurs | Rôle |
 |---|---|---|
 | `name` | texte | Nom technique du champ |
-| `type` | `string`, `integer`, `number`, `boolean` | Type de la valeur |
+| `type` | `string`, `integer`, `number`, `boolean`, `object`, `array` | Type de la valeur ou du conteneur |
 | `parent` | vide ou nom d'un champ | Objet parent du champ |
 | `repeat_on` | vide ou nom d'un champ entier | Compteur de répétition |
 | `required` | `true` ou `false` | Indique un champ obligatoire dans l'interface |
@@ -73,6 +73,41 @@ Exemple de schéma :
 ```
 
 Le bouton **Enregistrer la structure** envoie le schéma avec `PUT /projects/update/{id}`. Le contrôleur normalise les valeurs et refuse les types inconnus ou les champs sans nom.
+
+### Exemple : chapitre et liste d'articles
+
+La structure suivante n'est pas valide en JSON :
+
+```text
+article { numero: 1, contenu: "...", numero: 2, contenu: "..." }
+```
+
+Un objet ne peut pas contenir deux fois la même clé. Il faut utiliser un tableau d'objets :
+
+```json
+{
+  "code_travail": {
+    "chapitre": 1,
+    "articles": [
+      { "numero": 1, "contenu": "hhhhh" },
+      { "numero": 2, "contenu": "hhfhf" }
+    ]
+  }
+}
+```
+
+Dans l'éditeur, configurez les champs ainsi :
+
+| Nom | Type | Parent | Répéter selon |
+|---|---|---|---|
+| `code_travail` | `object` | Racine | - |
+| `chapitre` | `integer` | `code_travail` | - |
+| `nombre_articles` | `integer` | `code_travail` | - |
+| `articles` | `array` | `code_travail` | `nombre_articles` |
+| `numero` | `integer` | `articles` | - |
+| `contenu` | `string` | `articles` | - |
+
+Le champ `nombre_articles` est un compteur technique. Il peut être conservé dans les données ou retiré plus tard selon le format attendu ; il sert à générer les éléments du tableau `articles`.
 
 ## 4. Champs imbriqués
 
